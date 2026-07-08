@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shirwal Rickshaw — Book an Auto in Seconds</title>
+<meta name="description" content="Book an auto-rickshaw anywhere in Shirwal, instantly on WhatsApp. Local, trusted, always available.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛺</text></svg>">
+<style>
+  :root {
+    --bg: #080c14;
+    --glass-fill: rgba(255,255,255,0.06);
+    --glass-border: rgba(255,255,255,0.12);
+    --glass-hover: rgba(255,255,255,0.10);
+    --teal: #00d4ff;
+    --violet: #7c3aed;
+    --wa-green: #25d366;
+    --text: #f0f4ff;
+    --text-muted: rgba(240,244,255,0.55);
+    --blur: blur(18px);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* ---- AURORA BACKGROUND ---- */
+  .aurora {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .aurora::before,
+  .aurora::after,
+  .aurora span {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.45;
+    animation: drift 18s ease-in-out infinite alternate;
+  }
+  .aurora::before {
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, #1e40af 0%, transparent 70%);
+    top: -200px; left: -150px;
+    animation-duration: 22s;
+  }
+  .aurora::after {
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, #5b21b6 0%, transparent 70%);
+    bottom: -100px; right: -100px;
+    animation-duration: 19s;
+    animation-delay: -7s;
+  }
+  .aurora span {
+    display: block;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, #0e7490 0%, transparent 70%);
+    top: 40%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation-duration: 25s;
+    animation-delay: -12s;
+  }
+  @keyframes drift {
+    0%   { transform: translate(0, 0) scale(1); }
+    33%  { transform: translate(60px, -40px) scale(1.07); }
+    66%  { transform: translate(-30px, 50px) scale(0.95); }
+    100% { transform: translate(40px, 20px) scale(1.03); }
+  }
+
+  /* keep everything above aurora */
+  body > *:not(.aurora) { position: relative; z-index: 1; }
+
+  /* ---- GLASS MIXIN ---- */
+  .glass {
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border-radius: 18px;
+    transition: background .25s ease, border-color .25s ease;
+  }
+  .glass:hover { background: var(--glass-hover); border-color: rgba(255,255,255,0.22); }
+
+  /* ---- NAVBAR ---- */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 14px 24px;
+    background: rgba(8,12,20,0.55);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--glass-border);
+  }
+  .nav-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .brand {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .brand-dot {
+    width: 8px; height: 8px;
+    background: var(--teal);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--teal);
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.8); }
+  }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .circle-link {
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-decoration: none;
+    display: none;
+    transition: color .2s;
+  }
+  .circle-link:hover { color: var(--text); }
+  @media (min-width: 600px) { .circle-link { display: block; } }
+
+  /* ---- BUTTONS ---- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: .95rem;
+    padding: 12px 22px;
+    border-radius: 100px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all .2s ease;
+    white-space: nowrap;
+    border: none;
+  }
+  .btn-wa {
+    background: var(--wa-green);
+    color: #fff;
+    box-shadow: 0 0 24px rgba(37,211,102,0.35);
+  }
+  .btn-wa:hover {
+    background: #1ebe5d;
+    box-shadow: 0 0 36px rgba(37,211,102,0.55);
+    transform: translateY(-2px);
+  }
+  .btn-ghost {
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: var(--blur);
+    color: var(--text);
+  }
+  .btn-ghost:hover {
+    background: var(--glass-hover);
+    border-color: rgba(255,255,255,.25);
+    transform: translateY(-2px);
+  }
+  .btn-big {
+    font-size: 1.15rem;
+    padding: 18px 36px;
+    border-radius: 100px;
+    box-shadow: 0 0 40px rgba(37,211,102,0.4);
+  }
+  .btn-big:hover {
+    box-shadow: 0 0 60px rgba(37,211,102,0.6);
+    transform: translateY(-3px);
+  }
+  .wa-svg { width: 20px; height: 20px; flex: none; }
+
+  /* ---- HERO ---- */
+  .hero {
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 100px 24px 80px;
+  }
+  .hero-inner { max-width: 720px; }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.3);
+    border-radius: 100px;
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--teal);
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    backdrop-filter: blur(12px);
+  }
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(2.8rem, 8vw, 5.2rem);
+    font-weight: 700;
+    line-height: 1.05;
+    margin-bottom: 22px;
+    background: linear-gradient(135deg, #ffffff 0%, #a5f3fc 50%, #818cf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    max-width: 480px;
+    margin: 0 auto 40px;
+    font-weight: 500;
+  }
+  .hero-cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+  /* ---- WRAP ---- */
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ---- SECTION ---- */
+  section { padding: 90px 24px; }
+  .section-label {
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 12px;
+  }
+  .section-head { margin-bottom: 56px; }
+  .section-head h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+  .section-head p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-weight: 500;
+    max-width: 480px;
+  }
+  .section-head.center { text-align: center; }
+  .section-head.center p { margin: 0 auto; }
+
+  /* ---- STEPS ---- */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+  }
+  .step-card {
+    padding: 32px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .step-card::before {
+    content: attr(data-n);
+    position: absolute;
+    top: -12px; right: 16px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 5rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.04);
+    line-height: 1;
+    pointer-events: none;
+  }
+  .step-num-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--teal), var(--violet));
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 18px;
+    box-shadow: 0 0 18px rgba(0,212,255,0.35);
+  }
+  .step-card h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .step-card p { color: var(--text-muted); font-size: .92rem; line-height: 1.6; }
+
+  /* ---- AREA ---- */
+  .area-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px;
+    text-align: center;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .chip {
+    padding: 9px 20px;
+    background: rgba(0,212,255,0.08);
+    border: 1px solid rgba(0,212,255,0.25);
+    border-radius: 100px;
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--teal);
+    backdrop-filter: blur(8px);
+    transition: background .2s, transform .2s;
+  }
+  .chip:hover { background: rgba(0,212,255,0.16); transform: translateY(-2px); }
+  .area-note {
+    color: var(--text-muted);
+    font-size: .88rem;
+    font-weight: 500;
+  }
+
+  /* ---- RIDE CARDS ---- */
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 20px;
+  }
+  .ride-card {
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .ride-icon {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ride-icon img { width: 28px; height: 28px; }
+  .ride-card h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+  .ride-card p { color: var(--text-muted); font-size: .88rem; line-height: 1.6; flex-grow: 1; }
+
+  /* ---- RATES ---- */
+  .rates-wrap { max-width: 640px; margin: 0 auto; }
+  .rate-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--glass-border);
+    font-weight: 600;
+    font-size: .95rem;
+    transition: background .2s;
+  }
+  .rate-row:last-of-type { border-bottom: none; }
+  .rate-row:not(.rate-head):hover { background: var(--glass-hover); }
+  .rate-head {
+    padding: 14px 28px;
+    color: var(--text-muted);
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--glass-border);
+    border-radius: 18px 18px 0 0;
+    background: rgba(0,212,255,0.06);
+  }
+  .rate-val {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--teal);
+  }
+  .disclaimer {
+    text-align: center;
+    margin-top: 20px;
+    color: var(--text-muted);
+    font-size: .8rem;
+    font-weight: 500;
+  }
+
+  /* ---- WHY ---- */
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  .why-card {
+    padding: 28px 22px;
+    text-align: center;
+  }
+  .why-icon {
+    font-size: 1.8rem;
+    margin-bottom: 14px;
+    display: block;
+    filter: drop-shadow(0 0 8px rgba(0,212,255,0.5));
+  }
+  .why-card h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .why-card p { color: var(--text-muted); font-size: .85rem; line-height: 1.6; }
+
+  /* ---- CTA STRIP ---- */
+  .cta-strip {
+    text-align: center;
+    padding: 100px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-strip::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(37,211,102,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cta-strip h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .cta-strip p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 36px;
+  }
+
+  /* ---- FOOTER ---- */
+  footer {
+    background: rgba(255,255,255,0.03);
+    border-top: 1px solid var(--glass-border);
+    padding: 44px 24px 30px;
+    text-align: center;
+  }
+  footer .brand-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+  footer .circle-line {
+    color: var(--text-muted);
+    font-size: .85rem;
+    font-weight: 500;
+    margin-bottom: 18px;
+  }
+  footer .circle-line a { color: var(--teal); text-decoration: none; }
+  footer .circle-line a:hover { text-decoration: underline; }
+  footer .wa-link a {
+    color: var(--wa-green);
+    font-weight: 700;
+    font-size: .9rem;
+    text-decoration: none;
+  }
+  footer .wa-link { margin-bottom: 24px; }
+  footer .copy {
+    color: var(--text-muted);
+    font-size: .75rem;
+    padding-top: 18px;
+    border-top: 1px solid var(--glass-border);
+  }
+
+  /* divider line */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+    margin: 0 24px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .aurora::before, .aurora::after, .aurora span { animation: none; }
+  }
+
+  @media (max-width: 600px) {
+    section { padding: 64px 20px; }
+    .area-wrap { padding: 28px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="aurora" aria-hidden="true"><span></span></div>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-inner">
+    <a href="https://shirwal.in" class="brand">
+      <div class="brand-dot"></div>
+      Shirwal Rickshaw
+    </a>
+    <div class="nav-right">
+      <a href="https://shirwal.in" class="circle-link">← shirwal.in</a>
+      <a class="btn btn-wa" href="https://wa.me/917066644476?text=Hello!%20I%20need%20a%20rickshaw%20in%20Shirwal.%20Please%20share%20availability.">
+        <svg class="wa-svg" viewBox="0 0 32 32" fill="currentColor"><path d="M16.001 3C9.373 3 4 8.373 4 15c0 2.386.696 4.61 1.897 6.478L4 29l7.72-1.868A11.93 11.93 0 0 0 16.001 27C22.63 27 28 21.627 28 15S22.63 3 16.001 3zm0 21.75a9.7 9.7 0 0 1-4.95-1.353l-.355-.21-4.582 1.108 1.223-4.465-.232-.366A9.7 9.7 0 0 1 6.25 15c0-5.38 4.372-9.75 9.751-9.75S25.75 9.62 25.75 15s-4.371 9.75-9.749 9.75zm5.35-7.297c-.293-.147-1.735-.858-2.004-.956-.269-.098-.464-.147-.66.147-.196.293-.758.955-.929 1.152-.171.196-.342.22-.635.073-.293-.147-1.238-.456-2.358-1.454-.872-.778-1.461-1.739-1.632-2.032-.171-.293-.018-.451.129-.598.132-.132.293-.342.44-.513.147-.171.196-.293.293-.489.098-.196.049-.367-.024-.514-.073-.147-.66-1.59-.905-2.178-.238-.572-.481-.494-.66-.503-.171-.008-.367-.01-.562-.01-.196 0-.514.073-.783.367-.269.293-1.026 1.003-1.026 2.446 0 1.443 1.05 2.837 1.197 3.033.147.196 2.067 3.157 5.008 4.428.7.302 1.246.482 1.672.617.702.223 1.341.192 1.846.116.563-.084 1.735-.709 1.98-1.393.245-.685.245-1.271.171-1.393-.073-.122-.269-.196-.562-.343z"/></svg>
+        WhatsApp
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <div class="brand-dot" style="width:6px;height:6px;"></div>
+      Shirwal · Maharashtra
+    </div>
+    <h1>Your ride,<br>one message away.</h1>
+    <p>Book an auto-rickshaw anywhere in Shirwal instantly on WhatsApp. No app, no waiting, no stress.</p>
+    <div class="hero-cta">
+      <a class="btn btn-wa btn-big" href="https://wa.me/917066644476?text=Hello!%20I%20need%20a%20rickshaw%20in%20Shirwal.%20Please%20share%20availability.">
+        <svg class="wa-svg" viewBox="0 0 32 32" fill="currentColor" style="width:22px;height:22px;"><path d="M16.001 3C9.373 3 4 8.373 4 15c0 2.386.696 4.61 1.897 6.478L4 29l7.72-1.868A11.93 11.93 0 0 0 16.001 27C22.63 27 28 21.627 28 15S22.63 3 16.001 3zm0 21.75a9.7 9.7 0 0 1-4.95-1.353l-.355-.21-4.582 1.108 1.223-4.465-.232-.366A9.7 9.7 0 0 1 6.25 15c0-5.38 4.372-9.75 9.751-9.75S25.75 9.62 25.75 15s-4.371 9.75-9.749 9.75zm5.35-7.297c-.293-.147-1.735-.858-2.004-.956-.269-.098-.464-.147-.66.147-.196.293-.758.955-.929 1.152-.171.196-.342.22-.635.073-.293-.147-1.238-.456-2.358-1.454-.872-.778-1.461-1.739-1.632-2.032-.171-.293-.018-.451.129-.598.132-.132.293-.342.44-.513.147-.171.196-.293.293-.489.098-.196.049-.367-.024-.514-.073-.147-.66-1.59-.905-2.178-.238-.572-.481-.494-.66-.503-.171-.008-.367-.01-.562-.01-.196 0-.514.073-.783.367-.269.293-1.026 1.003-1.026 2.446 0 1.443 1.05 2.837 1.197 3.033.147.196 2.067 3.157 5.008 4.428.7.302 1.246.482 1.672.617.702.223 1.341.192 1.846.116.563-.084 1.735-.709 1.98-1.393.245-.685.245-1.271.171-1.393-.073-.122-.269-.196-.562-.343z"/></svg>
+        Book on WhatsApp
+      </a>
+      <a class="btn btn-ghost" href="#how">How it works ↓</a>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HOW TO BOOK -->
+<section id="how">
+  <div class="wrap">
+    <div class="section-head center">
+      <div class="section-label">Simple process</div>
+      <h2>Booked in three taps</h2>
+      <p>No registration. No app. Just WhatsApp.</p>
+    </div>
+    <div class="steps">
+      <div class="step-card glass" data-n="1">
+        <div class="step-num-pill">1</div>
+        <h3>Tap WhatsApp</h3>
+        <p>Hit the button — it opens a pre-filled chat, ready to send in seconds.</p>
+      </div>
+      <div class="step-card glass" data-n="2">
+        <div class="step-num-pill">2</div>
+        <h3>Share your location</h3>
+        <p>Drop a pin or name a landmark. Any nearby spot works fine.</p>
+      </div>
+      <div class="step-card glass" data-n="3">
+        <div class="step-num-pill">3</div>
+        <h3>Driver arrives</h3>
+        <p>A nearby auto heads your way. Hop in and go.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SERVICE AREA -->
+<section id="area">
+  <div class="wrap">
+    <div class="section-head center">
+      <div class="section-label">Coverage</div>
+      <h2>Where we run</h2>
+      <p>Shirwal and all the villages around it.</p>
+    </div>
+    <div class="area-wrap glass">
+      <div class="chips">
+        <span class="chip">Shirwal</span>
+        <span class="chip">Pargaon</span>
+        <span class="chip">Khandala</span>
+        <span class="chip">Bhor Road</span>
+        <span class="chip">Nasrapur</span>
+        <span class="chip">Surrounding Villages</span>
+      </div>
+      <p class="area-note">Not sure if we cover your area? Ask us on WhatsApp — we cover more than this list.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- RIDE TYPES -->
+<section id="rides">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-label">Services</div>
+      <h2>What kind of ride do you need?</h2>
+    </div>
+    <div class="grid-4">
+      <div class="ride-card glass">
+        <div class="ride-icon"><img src="https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f6fa.svg" alt="Rickshaw"></div>
+        <h3>Local Rides</h3>
+        <p>Quick point-to-point trips anywhere within Shirwal town.</p>
+        <a class="btn btn-wa" style="font-size:.85rem;padding:10px 18px;" href="https://wa.me/917066644476?text=Hi!%20I'd%20like%20to%20book%20a%20local%20ride%20in%20Shirwal.">Book this</a>
+      </div>
+      <div class="ride-card glass">
+        <div class="ride-icon"><img src="https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f3eb.svg" alt="School"></div>
+        <h3>School / College Drops</h3>
+        <p>Reliable daily drops and pickups for students, every day.</p>
+        <a class="btn btn-wa" style="font-size:.85rem;padding:10px 18px;" href="https://wa.me/917066644476?text=Hi!%20I'd%20like%20a%20school%2Fcollege%20drop%20in%20Shirwal.">Book this</a>
+      </div>
+      <div class="ride-card glass">
+        <div class="ride-icon"><img src="https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f686.svg" alt="Train"></div>
+        <h3>Station Pickup / Drop</h3>
+        <p>Timed rides to and from the railway station — never miss a train.</p>
+        <a class="btn btn-wa" style="font-size:.85rem;padding:10px 18px;" href="https://wa.me/917066644476?text=Hi!%20I%20need%20a%20station%20pickup%2Fdrop%20in%20Shirwal.">Book this</a>
+      </div>
+      <div class="ride-card glass">
+        <div class="ride-icon"><img src="https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f5fa.svg" alt="Map"></div>
+        <h3>Outstation</h3>
+        <p>Longer trips beyond Shirwal. Ask us for driver availability.</p>
+        <a class="btn btn-wa" style="font-size:.85rem;padding:10px 18px;" href="https://wa.me/917066644476?text=Hi!%20I'd%20like%20to%20ask%20about%20an%20outstation%20ride%20from%20Shirwal.">Book this</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- RATES -->
+<section id="rates">
+  <div class="wrap">
+    <div class="section-head center">
+      <div class="section-label">Pricing</div>
+      <h2>Transparent rates</h2>
+      <p>No hidden charges. No meter games.</p>
+    </div>
+    <div class="rates-wrap glass">
+      <div class="rate-row rate-head"><span>Service</span><span>Rate</span></div>
+      <div class="rate-row"><span>Starting fare</span><span class="rate-val">₹20</span></div>
+      <div class="rate-row"><span>Per kilometre</span><span class="rate-val">₹10/km</span></div>
+      <div class="rate-row"><span>Waiting time</span><span class="rate-val">₹2/min</span></div>
+      <div class="rate-row"><span>School drop (flat)</span><span class="rate-val">₹30–₹50</span></div>
+    </div>
+    <p class="disclaimer">Final fare agreed with driver. Rates above are indicative only.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- WHY -->
+<section id="why">
+  <div class="wrap">
+    <div class="section-head center">
+      <div class="section-label">Why us</div>
+      <h2>Trusted by Shirwal, ride after ride</h2>
+    </div>
+    <div class="why-grid">
+      <div class="why-card glass">
+        <span class="why-icon">🕐</span>
+        <h3>Always Available</h3>
+        <p>Autos on standby, day and night.</p>
+      </div>
+      <div class="why-card glass">
+        <span class="why-icon">📍</span>
+        <h3>Local & Trusted</h3>
+        <p>Drivers who know every lane in Shirwal.</p>
+      </div>
+      <div class="why-card glass">
+        <span class="why-icon">⚡</span>
+        <h3>Instant Booking</h3>
+        <p>One message, no app to download.</p>
+      </div>
+      <div class="why-card glass">
+        <span class="why-icon">✅</span>
+        <h3>Fair Rates</h3>
+        <p>Upfront pricing, agreed before you ride.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA STRIP -->
+<section class="cta-strip">
+  <h2>Need a ride right now?</h2>
+  <p>We're on WhatsApp — message us and a driver heads your way.</p>
+  <a class="btn btn-wa btn-big" href="https://wa.me/917066644476?text=Hello!%20I%20need%20a%20rickshaw%20in%20Shirwal.%20Please%20share%20availability.">
+    <svg class="wa-svg" viewBox="0 0 32 32" fill="currentColor" style="width:22px;height:22px;"><path d="M16.001 3C9.373 3 4 8.373 4 15c0 2.386.696 4.61 1.897 6.478L4 29l7.72-1.868A11.93 11.93 0 0 0 16.001 27C22.63 27 28 21.627 28 15S22.63 3 16.001 3zm0 21.75a9.7 9.7 0 0 1-4.95-1.353l-.355-.21-4.582 1.108 1.223-4.465-.232-.366A9.7 9.7 0 0 1 6.25 15c0-5.38 4.372-9.75 9.751-9.75S25.75 9.62 25.75 15s-4.371 9.75-9.749 9.75zm5.35-7.297c-.293-.147-1.735-.858-2.004-.956-.269-.098-.464-.147-.66.147-.196.293-.758.955-.929 1.152-.171.196-.342.22-.635.073-.293-.147-1.238-.456-2.358-1.454-.872-.778-1.461-1.739-1.632-2.032-.171-.293-.018-.451.129-.598.132-.132.293-.342.44-.513.147-.171.196-.293.293-.489.098-.196.049-.367-.024-.514-.073-.147-.66-1.59-.905-2.178-.238-.572-.481-.494-.66-.503-.171-.008-.367-.01-.562-.01-.196 0-.514.073-.783.367-.269.293-1.026 1.003-1.026 2.446 0 1.443 1.05 2.837 1.197 3.033.147.196 2.067 3.157 5.008 4.428.7.302 1.246.482 1.672.617.702.223 1.341.192 1.846.116.563-.084 1.735-.709 1.98-1.393.245-.685.245-1.271.171-1.393-.073-.122-.269-.196-.562-.343z"/></svg>
+    Message Us on WhatsApp
+  </a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="brand-name">Shirwal Rickshaw</div>
+  <div class="circle-line">Part of the <a href="https://shirwal.in">Shirwal Circle</a> · shirwal.in</div>
+  <div class="wa-link"><a href="https://wa.me/917066644476?text=Hello!%20I%20need%20a%20rickshaw%20in%20Shirwal.%20Please%20share%20availability.">Chat on WhatsApp →</a></div>
+  <div class="copy">© 2025 Shirwal Rickshaw. All rights reserved.</div>
+</footer>
+
+</body>
+</html>
